@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CALC — Advanced Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" /> 
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="app-layout">
+
+    <!-- ── Left sidebar: branding + theme ── -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">◈</span>
+        <span class="brand-name">CALC</span>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">Theme</p>
+        <div class="theme-grid" id="themeBar"></div>
+        <div class="custom-wrap">
+          <label class="custom-swatch" title="Custom accent colour">
+            <input type="color" id="customColor" value="#ff9500" />
+            <span class="custom-icon">✦</span>
+          </label>
+          <span class="sidebar-label" style="margin:0">Custom</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">Mode</p>
+        <div class="mode-stack">
+          <button class="mode-pill active" id="modeStd"   onclick="setMode('std')">Standard</button>
+          <button class="mode-pill"        id="modeSci"   onclick="setMode('sci')">Scientific</button>
+          <button class="mode-pill"        id="modeProg"  onclick="setMode('prog')">Programmer</button>
+          <button class="mode-pill"        id="modeUnit"  onclick="setMode('unit')">Converter</button>
+          <button class="mode-pill"        id="modeGraph" onclick="setMode('graph')">Graph</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">Angle</p>
+        <button class="deg-toggle" id="degBtn" onclick="toggleDeg()">
+          <span class="deg-knob" id="degKnob"></span>
+          <span id="degLabel">DEG</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section history-section">
+        <p class="sidebar-label">History</p>
+        <ul class="hist-list" id="histList">
+          <li class="hist-empty">No history yet</li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- ── Main calculator area ── -->
+    <main class="calc-main">
+
+      <!-- Display -->
+      <div class="display-card" id="displayCard">
+        <div class="display-top">
+          <span class="d-hist"  id="histLine"></span>
+          <span class="d-live"  id="liveLine"></span>
+        </div>
+        <div class="d-expr-wrap">
+          <span class="d-expr" id="exprLine"></span>
+        </div>
+        <div class="d-main-row">
+          <span class="d-main" id="mainLine">0</span>
+          <span class="d-frac" id="fracLine"></span>
+        </div>
+      </div>
+
+      <!-- Scientific row -->
+      <div class="sci-panel" id="sciPanel">
+        <button class="btn sci" onclick="sciOp('sin')">sin</button>
+        <button class="btn sci" onclick="sciOp('cos')">cos</button>
+        <button class="btn sci" onclick="sciOp('tan')">tan</button>
+        <button class="btn sci" onclick="sciOp('sqrt')">√</button>
+        <button class="btn sci" onclick="sciOp('log')">log</button>
+        <button class="btn sci" onclick="sciOp('ln')">ln</button>
+        <button class="btn sci" onclick="appendRaw('Math.PI')">π</button>
+        <button class="btn sci" onclick="appendRaw(String(Math.E))">e</button>
+        <button class="btn sci" onclick="sciOp('sq')">x²</button>
+        <button class="btn sci" onclick="doFactorial()">n!</button>
+        <button class="btn sci" onclick="startPower()">xʸ</button>
+        <button class="btn sci" onclick="autoBalance()">(…)</button>
+      </div>
+
+      <!-- Programmer panel -->
+      <div class="prog-panel" id="progPanel">
+        <div class="prog-row"><span class="prog-base">BIN</span><span class="prog-val" id="pBin">0</span></div>
+        <div class="prog-row"><span class="prog-base">OCT</span><span class="prog-val" id="pOct">0</span></div>
+        <div class="prog-row"><span class="prog-base">HEX</span><span class="prog-val" id="pHex">0</span></div>
+        <div class="prog-row"><span class="prog-base">DEC</span><span class="prog-val" id="pDec">0</span></div>
+      </div>
+
+      <!-- Unit converter panel -->
+      <div class="unit-panel" id="unitPanel">
+        <select class="unit-sel" id="unitCat" onchange="updateUnitSelects()">
+          <option value="length">Length</option>
+          <option value="weight">Weight</option>
+          <option value="temp">Temperature</option>
+        </select>
+        <div class="unit-row">
+          <select class="unit-sel" id="unitFrom"></select>
+          <span class="unit-arrow">→</span>
+          <select class="unit-sel" id="unitTo"></select>
+        </div>
+        <div class="unit-result" id="unitResult">Enter a value first</div>
+      </div>
+
+      <!-- Graph panel -->
+      <div class="graph-panel" id="graphPanel">
+        <div class="graph-header">
+          <span class="graph-label">y =</span>
+          <input class="graph-input" id="graphExpr" value="x*x" placeholder="e.g. Math.sin(x)" />
+          <button class="graph-plot-btn" onclick="plotGraph()">Plot</button>
+        </div>
+        <canvas id="graphCanvas" width="560" height="160"></canvas>
+      </div>
+
+      <!-- Quick presets bar -->
+      <div class="presets-bar" id="presetsBar" style="display:none"></div>
+
+      <!-- Main button grid -->
+      <div class="btn-grid">
+        <!-- Row 0: quick presets -->
+        <button class="btn preset" onclick="openPreset('tip')">Tip</button>
+        <button class="btn preset" onclick="openPreset('bmi')">BMI</button>
+        <button class="btn fn"     onclick="doAction('ac')">AC</button>
+        <button class="btn fn"     onclick="doBackspace()">⌫</button>
+
+        <!-- Row 1 -->
+        <button class="btn fn"  onclick="doAction('pct')">%</button>
+        <button class="btn fn"  onclick="appendRaw('(')"> ( </button>
+        <button class="btn fn"  onclick="appendRaw(')')"> ) </button>
+        <button class="btn op"  onclick="appendOp('/')">÷</button>
+
+        <!-- Row 2 -->
+        <button class="btn num" onclick="appendDigit('7')">7</button>
+        <button class="btn num" onclick="appendDigit('8')">8</button>
+        <button class="btn num" onclick="appendDigit('9')">9</button>
+        <button class="btn op"  onclick="appendOp('*')">×</button>
+
+        <!-- Row 3 -->
+        <button class="btn num" onclick="appendDigit('4')">4</button>
+        <button class="btn num" onclick="appendDigit('5')">5</button>
+        <button class="btn num" onclick="appendDigit('6')">6</button>
+        <button class="btn op"  onclick="appendOp('-')">−</button>
+
+        <!-- Row 4 -->
+        <button class="btn num" onclick="appendDigit('1')">1</button>
+        <button class="btn num" onclick="appendDigit('2')">2</button>
+        <button class="btn num" onclick="appendDigit('3')">3</button>
+        <button class="btn op"  onclick="appendOp('+')">+</button>
+
+        <!-- Row 5 -->
+        <button class="btn num wide" onclick="appendDigit('0')">0</button>
+        <button class="btn num"      onclick="appendDot()">.</button>
+        <button class="btn eq"       onclick="doEquals()">=</button>
+      </div>
+
+    </main>
+
+  </div><!-- /.app-layout -->
+
+  <div class="error-toast" id="errorToast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
